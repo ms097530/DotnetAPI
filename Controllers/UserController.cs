@@ -11,15 +11,16 @@ namespace Namespace
     public class UserController : ControllerBase
     {
         [HttpGet]
-        public ActionResult<IEnumerable<string>> Get()
+        public ActionResult<IEnumerable<string>> GetUsers()
         {
-            return new string[] { "value1", "value2" };
+            return new string[] { "user1", "user2" };
         }
 
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id)
+        public ActionResult<string> Get(int id, [FromQuery] int code)
         {
-            return "value";
+            Console.WriteLine(code);
+            return "User";
         }
 
         [HttpPost]
