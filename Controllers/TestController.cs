@@ -13,16 +13,42 @@ public class TestController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet(Name = "GetTest")]
+    [HttpGet]
     public IEnumerable<Test> Get()
     {
         Console.WriteLine("TESTING API");
         return new Test[] { new Test(), new Test("DUMMY") };
     }
 
-    [HttpPost(Name = "PostTest")]
-    public string Post()
+    [HttpPost]
+    public ContentResult Post()
     {
-        return "HELLO TEST";
+        return Content("<h1>HELLO POST TEST</h1>");
+    }
+
+    [HttpPost("{id}")]
+    public ContentResult Post(string id)
+    {
+        Console.WriteLine(id);
+        return Content("<h1>HELLO POST BY ID TEST</h1>");
+    }
+
+    [HttpGet("{id}")]
+    public ContentResult GetById()
+    {
+        Console.WriteLine("GETTING BY ID");
+        return Content("<h1>HELLO GET TEST BY ID</h1>");
+    }
+
+    [HttpPut("{id}")]
+    public ContentResult Put()
+    {
+        return Content("<h1>PUTTING TEST</h1>");
+    }
+
+    [HttpDelete("{id}")]
+    public ContentResult Delete()
+    {
+        return Content("<h1>DELETING TEST</h1>");
     }
 }
