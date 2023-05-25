@@ -1,6 +1,6 @@
 namespace DotnetAPI;
 
-public partial class Users
+public partial class User
 {
     private int UserId;
     public string FirstName { get; set; } = "";

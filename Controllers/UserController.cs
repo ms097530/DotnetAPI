@@ -32,7 +32,7 @@ namespace Namespace
         }
 
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id, [FromQuery] int code)
+        public ActionResult<string> GetUser(int id, [FromQuery] int code)
         {
             Console.WriteLine(code);
             return "User";
