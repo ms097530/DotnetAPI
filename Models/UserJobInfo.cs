@@ -2,7 +2,7 @@ namespace DotnetAPI;
 
 public partial class UserJobInfo
 {
-    private int UserId;
+    public int UserId { get; set; }
 
     public string JobTitle { get; set; } = "";
 

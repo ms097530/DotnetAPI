@@ -2,7 +2,7 @@ namespace DotnetAPI;
 
 public partial class UserSalary
 {
-    private int UserId;
+    public int UserId { get; set; }
 
     public decimal Salary { get; set; }
 }
