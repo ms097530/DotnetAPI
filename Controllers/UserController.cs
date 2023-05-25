@@ -26,16 +26,32 @@ namespace Namespace
 
 
         [HttpGet]
-        public ActionResult<IEnumerable<string>> GetUsers()
+        // public ActionResult<IEnumerable<User>> GetUsers()
+        public ActionResult<IEnumerable<User>> GetUsers()
         {
-            return new string[] { "user1", "user2" };
+            // Console.WriteLine("GETTING USERS");
+            // return _dapper.LoadData<User>("SELECT * FROM TutorialAppSchema.Users").ToList();
+            return _dapper.LoadData<User>("SELECT * FROM TutorialAppSchema.Users").ToArray();
         }
 
         [HttpGet("{id}")]
-        public ActionResult<string> GetUser(int id, [FromQuery] int code)
+        public ActionResult<User> GetUser(int id, [FromQuery] int code)
         {
-            Console.WriteLine(code);
-            return "User";
+            string sql = $@"
+                SELECT * FROM TutorialAppSchema.Users
+                WHERE  UserId = {id}
+            ";
+            try
+            {
+                ActionResult<User> result = _dapper.LoadDataSingle<User>(sql);
+                return result;
+            }
+            catch
+            {
+                // * using anonymous object to determine contents of bad request response
+                return BadRequest(new { Message = "AHHH", StatusCode = 400 });
+                // return StatusCode(400, "Couldn't find a match");
+            }
         }
 
         [HttpPost]
