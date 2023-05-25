@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DotnetAPI;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Namespace
@@ -10,6 +11,20 @@ namespace Namespace
     [ApiController]
     public class UserController : ControllerBase
     {
+        DataContextDapper _dapper;
+        public UserController(IConfiguration config)
+        {
+            // * configuration object provides access to this from appsettings.json - unique to .NET 6+
+            _dapper = new DataContextDapper(config);
+        }
+
+        [HttpGet("TestConnection")]
+        public DateTime TestConnection()
+        {
+            return _dapper.LoadDataSingle<DateTime>("SELECT GETDATE()");
+        }
+
+
         [HttpGet]
         public ActionResult<IEnumerable<string>> GetUsers()
         {
