@@ -61,10 +61,13 @@ namespace Namespace
         }
 
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public IActionResult EditUser(int id, [FromBody] string value)
         {
             Console.WriteLine(id);
             Console.WriteLine(value);
+
+            // comes with ControllerBase class
+            return Ok();
         }
 
         [HttpDelete("{id}")]
