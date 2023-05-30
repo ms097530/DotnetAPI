@@ -55,9 +55,11 @@ namespace Namespace
         }
 
         [HttpPost]
-        public void Post([FromBody] string value)
+        public IActionResult AddUser([FromBody] string value)
         {
             Console.WriteLine("HELLO");
+
+            return Ok();
         }
 
         [HttpPut("{id}")]
