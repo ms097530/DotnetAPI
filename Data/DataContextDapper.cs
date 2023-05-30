@@ -2,7 +2,8 @@ using System.Data;
 using Dapper;
 using Microsoft.Data.SqlClient;
 
-namespace DotnetAPI
+// ? good practice to use sub-namespaces so things can be loaded separately/modularly
+namespace DotnetAPI.Data
 {
     class DataContextDapper
     {

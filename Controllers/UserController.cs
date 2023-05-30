@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotnetAPI;
+using DotnetAPI.Data;
+using DotnetAPI.DTO;
+using DotnetAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Namespace
+// ? good practice to use sub-namespaces so things can be loaded separately/modularly
+namespace DotnetAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

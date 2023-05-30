@@ -1,5 +1,7 @@
+using DotnetAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
+// ? good practice to use sub-namespaces so things can be loaded separately/modularly
 namespace DotnetAPI.Controllers;
 
 [ApiController]
