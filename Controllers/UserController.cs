@@ -55,16 +55,41 @@ namespace Namespace
         }
 
         [HttpPost]
-        public IActionResult AddUser([FromBody] string value)
+        // * use UserDTO because we just need temporary mapping, not full User object (don't need ID)
+        public IActionResult AddUser(UserDTO user)
         {
-            Console.WriteLine("HELLO");
+            Console.WriteLine("ADD USER");
 
-            return Ok();
+            string sql = @$"
+                INSERT INTO TutorialAppSchema.Users(
+                    [FirstName],
+                    [LastName],
+                    [Email],
+                    [Gender],
+                    [Active]
+                ) VALUES (
+                    '{user.FirstName}',
+                    '{user.LastName}',
+                    '{user.Email}',
+                    '{user.Gender}',
+                    {Convert.ToInt32(user.Active)}
+                )
+            ";
+
+            bool wasSuccessful = _dapper.ExecuteSql(sql);
+
+            if (wasSuccessful)
+            {
+                return Ok();
+            }
+
+            throw new Exception("Unable to add user");
         }
 
         [HttpPut("{id}")]
-        // can get values from body using appropriate attribute
+        // * can get values from body using appropriate attribute
         // public IActionResult EditUser(int id, [FromBody] string value)
+        // * when accepting a Model, a model is constructed based on provided body
         public IActionResult EditUser(User user)
         {
             // Console.WriteLine(id);
@@ -88,8 +113,13 @@ namespace Namespace
             bool wasSuccessful = _dapper.ExecuteSql(sql);
             Console.WriteLine(wasSuccessful);
 
-            // comes with ControllerBase class
-            return Ok();
+            if (wasSuccessful)
+            {
+                // comes with ControllerBase class
+                return Ok();
+            }
+
+            throw new Exception("Unable to update user");
         }
 
         [HttpDelete("{id}")]
