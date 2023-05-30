@@ -63,10 +63,30 @@ namespace Namespace
         }
 
         [HttpPut("{id}")]
-        public IActionResult EditUser(int id, [FromBody] string value)
+        // can get values from body using appropriate attribute
+        // public IActionResult EditUser(int id, [FromBody] string value)
+        public IActionResult EditUser(User user)
         {
-            Console.WriteLine(id);
-            Console.WriteLine(value);
+            // Console.WriteLine(id);
+            // Console.WriteLine(value);
+
+            string sql = @$"
+            UPDATE TutorialAppSchema.Users
+                SET
+                [FirstName] = '{user.FirstName}',
+                [LastName] = '{user.LastName}',
+                [Email] = '{user.Email}',
+                [Gender] = '{user.Gender}',
+                [Active] = {Convert.ToInt32(user.Active)}
+                    WHERE UserId = {user.UserId}
+            ";
+
+            Console.WriteLine(sql);
+            // Console.WriteLine(Convert.ToBoolean(1));
+            // Console.WriteLine(Convert.ToInt32(user.Active));
+
+            bool wasSuccessful = _dapper.ExecuteSql(sql);
+            Console.WriteLine(wasSuccessful);
 
             // comes with ControllerBase class
             return Ok();
