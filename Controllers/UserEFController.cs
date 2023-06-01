@@ -74,10 +74,10 @@ namespace DotnetAPI.Controllers
         // * can get values from body using appropriate attribute
         // public IActionResult EditUser(int id, [FromBody] string value)
         // * when accepting a Model, a model is constructed based on provided body
-        public IActionResult EditUser(User user)
+        public IActionResult EditUser(UserDTO user, int id)
         {
             User? userDB = _entityFramework.Users
-                             .Where(u => u.UserId == user.UserId)
+                             .Where(u => u.UserId == id)
                              .FirstOrDefault<User>();
 
             if (userDB != null)
@@ -85,7 +85,6 @@ namespace DotnetAPI.Controllers
                 userDB.Active = user.Active;
                 userDB.FirstName = user.FirstName;
                 userDB.LastName = user.LastName;
-                userDB.Email = user.Email;
                 userDB.Email = user.Email;
                 userDB.Gender = user.Gender;
 
