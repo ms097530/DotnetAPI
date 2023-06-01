@@ -117,5 +117,99 @@ namespace DotnetAPI.Controllers
 
             throw new Exception("Unable to find user");
         }
+
+        [HttpGet("jobinfo")]
+        public IEnumerable<UserJobInfo> GetJobInfo()
+        {
+            IEnumerable<UserJobInfo> jobInfo = _entityFramework.UserJobInfo.ToList();
+
+            return jobInfo;
+        }
+
+        [HttpGet("{id}/jobinfo")]
+        public ActionResult<UserJobInfo> GetUserJobInfo(int id)
+        {
+            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
+                                        .Where(uji => uji.UserId == id)
+                                        .FirstOrDefault();
+
+            if (userJobInfo != null)
+            {
+                return userJobInfo;
+            }
+
+            throw new Exception("Unable to find user job info");
+        }
+
+        [HttpPost("{id}/jobinfo")]
+        public IActionResult AddUserJobInfo(int id, UserJobInfo jobInfo)
+        {
+            User? user = _entityFramework.Users
+                            .Where(u => u.UserId == id)
+                            .FirstOrDefault();
+            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
+                            .Where(uji => uji.UserId == id)
+                            .FirstOrDefault();
+
+            // * user exists but does not have job info
+            if (userJobInfo == null && user != null)
+            {
+                jobInfo.UserId = id;
+
+                _entityFramework.UserJobInfo.Add(jobInfo);
+                if (_entityFramework.SaveChanges() > 0)
+                {
+                    return Ok();
+                }
+            }
+
+            string errMsg = user == null ? "User does not exist" : "This user already has job info";
+            throw new Exception(errMsg);
+        }
+
+        [HttpPut("{id}/jobinfo")]
+        public IActionResult EditUserJobInfo(int id, UserJobInfo jobInfo)
+        {
+            User? user = _entityFramework.Users
+                            .Where(u => u.UserId == id)
+                            .FirstOrDefault();
+            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
+                            .Where(uji => uji.UserId == id)
+                            .FirstOrDefault();
+
+            // * user exists and does have job info
+            if (userJobInfo != null && user != null)
+            {
+                userJobInfo.JobTitle = jobInfo.JobTitle;
+                userJobInfo.Department = jobInfo.Department;
+
+                if (_entityFramework.SaveChanges() > 0)
+                {
+                    return Ok();
+                }
+            }
+
+            string errMsg = user == null ? "User does not exist" : "User does not have job info to edit";
+            throw new Exception(errMsg);
+        }
+        [HttpDelete("{id}/jobinfo")]
+        public IActionResult DeleteUserJobInfo(int id)
+        {
+            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
+                                .Where(uji => uji.UserId == id)
+                                .FirstOrDefault();
+
+            if (userJobInfo != null)
+            {
+                _entityFramework.UserJobInfo.Remove(userJobInfo);
+
+                if (_entityFramework.SaveChanges() > 0)
+                {
+                    return Ok();
+                }
+            }
+
+            throw new Exception("Unable to find matching job info");
+        }
     }
 }
