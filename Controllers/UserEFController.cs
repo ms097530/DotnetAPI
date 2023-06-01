@@ -211,5 +211,98 @@ namespace DotnetAPI.Controllers
 
             throw new Exception("Unable to find matching job info");
         }
+
+        [HttpGet("salary")]
+        public IEnumerable<UserSalary> GetSalary()
+        {
+            IEnumerable<UserSalary> salary = _entityFramework.UserSalary.ToList();
+
+            return salary;
+        }
+
+        [HttpGet("{id}/salary")]
+        public ActionResult<UserSalary> GetUserSalary(int id)
+        {
+            UserSalary? userSalary = _entityFramework.UserSalary
+                                        .Where(uji => uji.UserId == id)
+                                        .FirstOrDefault();
+
+            if (userSalary != null)
+            {
+                return userSalary;
+            }
+
+            throw new Exception("Unable to find user salary");
+        }
+
+        [HttpPost("{id}/salary")]
+        public IActionResult AddUserSalary(int id, UserSalary salary)
+        {
+            User? user = _entityFramework.Users
+                            .Where(u => u.UserId == id)
+                            .FirstOrDefault();
+            UserSalary? userSalary = _entityFramework.UserSalary
+                            .Where(uji => uji.UserId == id)
+                            .FirstOrDefault();
+
+            // * user exists but does not have job info
+            if (userSalary == null && user != null)
+            {
+                salary.UserId = id;
+
+                _entityFramework.UserSalary.Add(salary);
+                if (_entityFramework.SaveChanges() > 0)
+                {
+                    return Ok();
+                }
+            }
+
+            string errMsg = user == null ? "User does not exist" : "This user already has salary";
+            throw new Exception(errMsg);
+        }
+
+        [HttpPut("{id}/salary")]
+        public IActionResult EditUserSalary(int id, UserSalary salary)
+        {
+            User? user = _entityFramework.Users
+                            .Where(u => u.UserId == id)
+                            .FirstOrDefault();
+            UserSalary? userSalary = _entityFramework.UserSalary
+                            .Where(uji => uji.UserId == id)
+                            .FirstOrDefault();
+
+            // * user exists and does have job info
+            if (userSalary != null && user != null)
+            {
+                userSalary.Salary = salary.Salary;
+
+                if (_entityFramework.SaveChanges() > 0)
+                {
+                    return Ok();
+                }
+            }
+
+            string errMsg = user == null ? "User does not exist" : "User does not have salary to edit";
+            throw new Exception(errMsg);
+        }
+        [HttpDelete("{id}/salary")]
+        public IActionResult DeleteUserSalary(int id)
+        {
+            UserSalary? userSalary = _entityFramework.UserSalary
+                                .Where(uji => uji.UserId == id)
+                                .FirstOrDefault();
+
+            if (userSalary != null)
+            {
+                _entityFramework.UserSalary.Remove(userSalary);
+
+                if (_entityFramework.SaveChanges() > 0)
+                {
+                    return Ok();
+                }
+            }
+
+            throw new Exception("Unable to find matching salary");
+        }
     }
 }
