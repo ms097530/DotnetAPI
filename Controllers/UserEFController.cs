@@ -13,76 +13,56 @@ namespace DotnetAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : ControllerBase
+    public class UserEFController : ControllerBase
     {
-        DataContextDapper _dapper;
-        public UserController(IConfiguration config)
+        DataContextEF _entityFramework;
+        public UserEFController(IConfiguration config)
         {
             // * configuration object provides access to this from appsettings.json - unique to .NET 6+
-            _dapper = new DataContextDapper(config);
-        }
-
-        [HttpGet("TestConnection")]
-        public DateTime TestConnection()
-        {
-            return _dapper.LoadDataSingle<DateTime>("SELECT GETDATE()");
+            _entityFramework = new DataContextEF(config);
         }
 
 
         [HttpGet]
         // public ActionResult<IEnumerable<User>> GetUsers()
-        public ActionResult<IEnumerable<User>> GetUsers()
+        public IEnumerable<User> GetUsers()
         {
-            // Console.WriteLine("GETTING USERS");
-            // return _dapper.LoadData<User>("SELECT * FROM TutorialAppSchema.Users").ToList();
-            return _dapper.LoadData<User>("SELECT * FROM TutorialAppSchema.Users").ToArray();
+            IEnumerable<User> users = _entityFramework.Users.ToList<User>();
+            return users;
         }
 
         [HttpGet("{id}")]
-        public ActionResult<User> GetUser(int id, [FromQuery] int code)
+        public ActionResult<User> GetUser(int id)
         {
-            string sql = $@"
-                SELECT * FROM TutorialAppSchema.Users
-                WHERE  UserId = {id}
-            ";
-            try
+            User? user = _entityFramework.Users
+                .Where(u => u.UserId == id)
+                .FirstOrDefault<User>();
+
+            if (user != null)
             {
-                ActionResult<User> result = _dapper.LoadDataSingle<User>(sql);
-                return result;
+                return user;
             }
-            catch
-            {
-                // * using anonymous object to determine contents of bad request response
-                return BadRequest(new { Message = "AHHH", StatusCode = 400 });
-                // return StatusCode(400, "Couldn't find a match");
-            }
+
+            throw new Exception("Could not find user");
         }
 
         [HttpPost]
         // * use UserDTO because we just need temporary mapping, not full User object (don't need ID)
         public IActionResult AddUser(UserDTO user)
         {
-            Console.WriteLine("ADD USER");
+            User userDB = new User();
 
-            string sql = @$"
-                INSERT INTO TutorialAppSchema.Users(
-                    [FirstName],
-                    [LastName],
-                    [Email],
-                    [Gender],
-                    [Active]
-                ) VALUES (
-                    '{user.FirstName}',
-                    '{user.LastName}',
-                    '{user.Email}',
-                    '{user.Gender}',
-                    {Convert.ToInt32(user.Active)}
-                )
-            ";
+            // * can use automapper to streamline, but this works for now
+            userDB.Active = user.Active;
+            userDB.FirstName = user.FirstName;
+            userDB.LastName = user.LastName;
+            userDB.Email = user.Email;
+            userDB.Email = user.Email;
+            userDB.Gender = user.Gender;
 
-            bool wasSuccessful = _dapper.ExecuteSql(sql);
+            _entityFramework.Add(userDB);
 
-            if (wasSuccessful)
+            if (_entityFramework.SaveChanges() > 0)
             {
                 return Ok();
             }
@@ -96,53 +76,50 @@ namespace DotnetAPI.Controllers
         // * when accepting a Model, a model is constructed based on provided body
         public IActionResult EditUser(User user)
         {
-            // Console.WriteLine(id);
-            // Console.WriteLine(value);
+            User? userDB = _entityFramework.Users
+                             .Where(u => u.UserId == user.UserId)
+                             .FirstOrDefault<User>();
 
-            string sql = @$"
-            UPDATE TutorialAppSchema.Users
-                SET
-                [FirstName] = '{user.FirstName}',
-                [LastName] = '{user.LastName}',
-                [Email] = '{user.Email}',
-                [Gender] = '{user.Gender}',
-                [Active] = {Convert.ToInt32(user.Active)}
-                    WHERE UserId = {user.UserId}
-            ";
-
-            Console.WriteLine(sql);
-            // Console.WriteLine(Convert.ToBoolean(1));
-            // Console.WriteLine(Convert.ToInt32(user.Active));
-
-            bool wasSuccessful = _dapper.ExecuteSql(sql);
-            Console.WriteLine(wasSuccessful);
-
-            if (wasSuccessful)
+            if (userDB != null)
             {
-                // comes with ControllerBase class
-                return Ok();
+                userDB.Active = user.Active;
+                userDB.FirstName = user.FirstName;
+                userDB.LastName = user.LastName;
+                userDB.Email = user.Email;
+                userDB.Email = user.Email;
+                userDB.Gender = user.Gender;
+
+                if (_entityFramework.SaveChanges() > 0)
+                {
+                    return Ok();
+                }
+
+                throw new Exception("Unable to update user");
             }
 
-            throw new Exception("Unable to update user");
+            throw new Exception("Unable to find user");
         }
 
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
+            User? userDB = _entityFramework.Users
+                            .Where(u => u.UserId == id)
+                            .FirstOrDefault();
 
-            string sql = @$"
-                DELETE FROM TutorialAppSchema.Users
-                    WHERE UserId = {id}
-            ";
-
-            bool wasSuccessful = _dapper.ExecuteSql(sql);
-
-            if (wasSuccessful)
+            if (userDB != null)
             {
-                return Ok();
+                _entityFramework.Remove(userDB);
+
+                if (_entityFramework.SaveChanges() > 0)
+                {
+                    return Ok();
+                }
+
+                throw new Exception("Unable to delete user");
             }
 
-            throw new Exception("Unable to delete user");
+            throw new Exception("Unable to find user");
         }
     }
 }
