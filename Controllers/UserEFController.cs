@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AutoMapper;
 using DotnetAPI;
 using DotnetAPI.Data;
 using DotnetAPI.DTO;
@@ -16,10 +17,14 @@ namespace DotnetAPI.Controllers
     public class UserEFController : ControllerBase
     {
         DataContextEF _entityFramework;
+        IMapper _mapper;
         public UserEFController(IConfiguration config)
         {
             // * configuration object provides access to this from appsettings.json - unique to .NET 6+
             _entityFramework = new DataContextEF(config);
+            _mapper = new Mapper(
+                new MapperConfiguration(cfg => cfg.CreateMap<UserDTO, User>())
+            );
         }
 
 
@@ -50,15 +55,7 @@ namespace DotnetAPI.Controllers
         // * use UserDTO because we just need temporary mapping, not full User object (don't need ID)
         public IActionResult AddUser(UserDTO user)
         {
-            User userDB = new User();
-
-            // * can use automapper to streamline, but this works for now
-            userDB.Active = user.Active;
-            userDB.FirstName = user.FirstName;
-            userDB.LastName = user.LastName;
-            userDB.Email = user.Email;
-            userDB.Email = user.Email;
-            userDB.Gender = user.Gender;
+            User userDB = _mapper.Map<User>(user);
 
             _entityFramework.Add(userDB);
 
