@@ -187,6 +187,7 @@ namespace DotnetAPI.Controllers
                 {
                     return Ok();
                 }
+                return StatusCode(500);
             }
 
             string errMsg = user == null ? "User does not exist" : "User does not have job info to edit";
@@ -207,6 +208,7 @@ namespace DotnetAPI.Controllers
                 {
                     return Ok();
                 }
+                return StatusCode(500);
             }
 
             throw new Exception("Unable to find matching job info");
@@ -255,6 +257,7 @@ namespace DotnetAPI.Controllers
                 {
                     return Ok();
                 }
+                return StatusCode(500);
             }
 
             string errMsg = user == null ? "User does not exist" : "This user already has salary";
@@ -280,6 +283,7 @@ namespace DotnetAPI.Controllers
                 {
                     return Ok();
                 }
+                return StatusCode(500);
             }
 
             string errMsg = user == null ? "User does not exist" : "User does not have salary to edit";
@@ -300,6 +304,7 @@ namespace DotnetAPI.Controllers
                 {
                     return Ok();
                 }
+                return StatusCode(500);
             }
 
             throw new Exception("Unable to find matching salary");
