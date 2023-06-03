@@ -144,5 +144,111 @@ namespace DotnetAPI.Controllers
 
             throw new Exception("Unable to delete user");
         }
+
+        [HttpGet("jobinfo")]
+        public IEnumerable<UserJobInfo> GetJobInfo()
+        {
+            string sql = @$"SELECT * FROM TutorialAppSchema.UserJobInfo";
+
+            IEnumerable<UserJobInfo> jobInfo = _dapper.LoadData<UserJobInfo>(sql);
+
+            return jobInfo;
+        }
+
+        [HttpGet("{id}/jobinfo")]
+        public ActionResult<UserJobInfo> GetUserJobInfo(int id)
+        {
+            string sql = @$"SELECT * FROM TutorialAppSchema.UserJobInfo WHERE UserId = {id}";
+
+            try
+            {
+                UserJobInfo userJobInfo = _dapper.LoadDataSingle<UserJobInfo>(sql);
+                return userJobInfo;
+            }
+            catch
+            {
+                throw new Exception("Unable to find user job info");
+            }
+        }
+
+        [HttpPost("{id}/jobinfo")]
+        public IActionResult AddUserJobInfo(int id, UserJobInfo jobInfo)
+        {
+            string userSql = $"SELECT [UserId] FROM TutorialAppSchema.Users WHERE UserId = {id}";
+            string existingJobInfoSql = $"SELECT [UserId] FROM TutorialAppSchema.UserJobInfo WHERE UserId = {id}";
+
+            Console.WriteLine("check if user exists");
+            User? user = _dapper.LoadDataSingle<User>(userSql);
+            Console.WriteLine("check if user job info exists");
+            UserJobInfo? userJobInfo = _dapper.LoadDataSingle<UserJobInfo>(existingJobInfoSql);
+            Console.WriteLine("fetched user and job info");
+
+            if (userJobInfo == null && user != null)
+            {
+                jobInfo.UserId = id;
+
+                string addJobInfoSql = @$"
+                INSERT INTO TutorialAppSchema.UserJobInfo
+                VALUES (
+                    {id},
+                    '{jobInfo.JobTitle}',
+                    '{jobInfo.Department}'
+                )";
+                Console.WriteLine("ABOUT TO ADD JOB INFO");
+                bool wasSuccessful = _dapper.ExecuteSql(addJobInfoSql);
+                if (wasSuccessful)
+                {
+                    return Ok();
+                }
+                return StatusCode(500);
+            }
+
+            string errMsg = user == null ? "User does not exist" : "This user already has job info";
+            throw new Exception(errMsg);
+        }
+
+        [HttpPut("{id}/jobinfo")]
+        public IActionResult EditUserInfo(int id, UserJobInfo jobInfo)
+        {
+            string userSql = $"SELECT UserId FROM TutorialAppSchema.Users WHERE UserId = {id}";
+            string existingJobInfoSql = $"SELECT UserId FROM TutorialAppSchema.UserJobInfo WHERE UserId = {id}";
+
+            User? user = _dapper.LoadDataSingle<User>(userSql);
+            UserJobInfo? userJobInfo = _dapper.LoadDataSingle<UserJobInfo>(existingJobInfoSql);
+
+            if (userJobInfo != null && user != null)
+            {
+                string updateJobInfoSql = @$"
+                UPDATE TutorialAppSchema.UserJobInfo
+                    SET
+                    [JobTitle] = '{jobInfo.JobTitle}',
+                    [Department] = '{jobInfo.Department}'
+                    WHERE UserId = {id}
+                ";
+
+                bool wasSuccessful = _dapper.ExecuteSql(updateJobInfoSql);
+                if (wasSuccessful)
+                {
+                    return Ok();
+                }
+                return StatusCode(500);
+            }
+
+            string errMsg = user == null ? "User does not exist" : "This user has no job info";
+            throw new Exception(errMsg);
+        }
+
+        [HttpDelete("{id}/jobinfo")]
+        public IActionResult DeleteUserJobInfo(int id)
+        {
+            string sql = $"DELETE FROM TutorialAppSchema.UserJobInfo WHERE UserId = {id}";
+            bool wasSuccessful = _dapper.ExecuteSql(sql);
+            if (wasSuccessful)
+            {
+                return Ok();
+            }
+
+            throw new Exception("Unable to delete job info");
+        }
     }
 }
