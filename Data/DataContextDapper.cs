@@ -25,7 +25,7 @@ namespace DotnetAPI.Data
         // sql 
         {
             IDbConnection dbConnection = new SqlConnection(_config.GetConnectionString("DefaultConnection"));
-            return dbConnection.QuerySingle<T>(sql);
+            return dbConnection.QuerySingleOrDefault<T>(sql);
         }
 
         public bool ExecuteSql(string sql)
