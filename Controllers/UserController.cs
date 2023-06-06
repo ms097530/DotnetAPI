@@ -76,7 +76,7 @@ namespace DotnetAPI.Controllers
                     '{user.LastName}',
                     '{user.Email}',
                     '{user.Gender}',
-                    {Convert.ToInt32(user.Active)}
+                    '{user.Active}'
                 )
             ";
 
@@ -106,7 +106,7 @@ namespace DotnetAPI.Controllers
                 [LastName] = '{user.LastName}',
                 [Email] = '{user.Email}',
                 [Gender] = '{user.Gender}',
-                [Active] = {Convert.ToInt32(user.Active)}
+                [Active] = '{user.Active}'
                     WHERE UserId = {user.UserId}
             ";
 
