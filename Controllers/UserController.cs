@@ -160,15 +160,15 @@ namespace DotnetAPI.Controllers
         {
             string sql = @$"SELECT * FROM TutorialAppSchema.UserJobInfo WHERE UserId = {id}";
 
-            try
+            // returns the user job info or null
+            UserJobInfo userJobInfo = _dapper.LoadDataSingle<UserJobInfo>(sql);
+            // Console.WriteLine(userJobInfo.UserId);
+            if (userJobInfo != null)
             {
-                UserJobInfo userJobInfo = _dapper.LoadDataSingle<UserJobInfo>(sql);
                 return userJobInfo;
             }
-            catch
-            {
-                throw new Exception("Unable to find user job info");
-            }
+
+            throw new Exception("Unable to find user job info");
         }
 
         [HttpPost("{id}/jobinfo")]
@@ -249,6 +249,114 @@ namespace DotnetAPI.Controllers
             }
 
             throw new Exception("Unable to delete job info");
+        }
+
+        [HttpGet("salary")]
+        public IEnumerable<UserSalary> GetUserSalaries()
+        {
+            string sql = @$"
+                SELECT * FROM TutorialAppSchema.UserSalary
+            ";
+
+            return _dapper.LoadData<UserSalary>(sql);
+        }
+
+        [HttpGet("{id}/salary")]
+        public ActionResult<UserSalary> GetUserSalary(int id)
+        {
+            string sql = @$"
+                SELECT * FROM TutorialAppSchema.UserSalary
+                    WHERE UserId = {id}
+            ";
+
+            UserSalary userSalary = _dapper.LoadDataSingle<UserSalary>(sql);
+            if (userSalary != null)
+            {
+                return userSalary;
+            }
+
+            throw new Exception("Unable to find user salary");
+        }
+
+        [HttpPost("{id}/salary")]
+        public IActionResult AddUserSalary(int id, UserSalary salary)
+        {
+            string addSalarySql = @$"
+                INSERT INTO TutorialAppSchema.UserSalary
+                VALUES (
+                    {id},
+                    {salary.Salary}
+                )
+            ";
+
+            string getUserSql = @$"SELECT * FROM TutorialAppSchema.Users WHERE UserId = {id}";
+            string getSalarySql = @$"SELECT * FROM TutorialAppSchema.UserSalary WHERE UserId = {id}";
+
+            User user = _dapper.LoadDataSingle<User>(getUserSql);
+            UserSalary userSalary = _dapper.LoadDataSingle<UserSalary>(getSalarySql);
+
+
+            if (userSalary == null && user != null)
+            // have user without salary data, can add new data
+            {
+                bool wasSuccessful = _dapper.ExecuteSql(addSalarySql);
+                if (wasSuccessful)
+                {
+                    return Ok();
+                }
+                throw new Exception("Unable to add salary data");
+            }
+            else if (user == null)
+            {
+                throw new Exception("User does not exist");
+            }
+            else
+            {
+                throw new Exception("User already has salary data");
+            }
+        }
+
+        [HttpPut("{id}/salary")]
+        public IActionResult EditUserSalary(int id, UserSalary salary)
+        {
+            string userSql = $"SELECT UserId FROM TutorialAppSchema.Users WHERE UserId = {id}";
+            string existingSalarySql = $"SELECT UserId FROM TutorialAppSchema.UserSalary WHERE UserId = {id}";
+
+            User user = _dapper.LoadDataSingle<User>(userSql);
+            UserJobInfo userSalary = _dapper.LoadDataSingle<UserJobInfo>(existingSalarySql);
+
+            if (userSalary != null && user != null)
+            {
+                string updateJobInfoSql = @$"
+                UPDATE TutorialAppSchema.UserSalary
+                    SET
+                    [Salary] = '{salary.Salary}'
+                    WHERE UserId = {id}
+                ";
+
+                bool wasSuccessful = _dapper.ExecuteSql(updateJobInfoSql);
+                if (wasSuccessful)
+                {
+                    return Ok();
+                }
+                return StatusCode(500);
+            }
+
+            string errMsg = user == null ? "User does not exist" : "This user has no salary data";
+            throw new Exception(errMsg);
+        }
+
+        [HttpDelete("{id}/salary")]
+        public IActionResult DeleteUserSalary(int id)
+        {
+            string sql = $"DELETE FROM TutorialAppSchema.UserSalary WHERE UserId = {id}";
+            bool wasSuccessful = _dapper.ExecuteSql(sql);
+            if (wasSuccessful)
+            {
+                return Ok();
+            }
+
+            throw new Exception("Unable to delete salary");
         }
     }
 }
