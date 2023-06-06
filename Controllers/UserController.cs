@@ -94,7 +94,7 @@ namespace DotnetAPI.Controllers
         // * can get values from body using appropriate attribute
         // public IActionResult EditUser(int id, [FromBody] string value)
         // * when accepting a Model, a model is constructed based on provided body
-        public IActionResult EditUser(User user)
+        public IActionResult EditUser(int id, UserDTO user)
         {
             // Console.WriteLine(id);
             // Console.WriteLine(value);
@@ -107,7 +107,7 @@ namespace DotnetAPI.Controllers
                 [Email] = '{user.Email}',
                 [Gender] = '{user.Gender}',
                 [Active] = '{user.Active}'
-                    WHERE UserId = {user.UserId}
+                    WHERE UserId = {id}
             ";
 
             Console.WriteLine(sql);
