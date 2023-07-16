@@ -37,23 +37,26 @@ namespace DotnetAPI.Controllers
         // public ActionResult<IEnumerable<User>> GetUsers()
         public IEnumerable<User> GetUsers()
         {
-            IEnumerable<User> users = _entityFramework.Users.ToList<User>();
+            // IEnumerable<User> users = _entityFramework.Users.ToList<User>();
+            IEnumerable<User> users = _userRepository.GetUsers();
             return users;
         }
 
         [HttpGet("{id}")]
         public ActionResult<User> GetUser(int id)
         {
-            User? user = _entityFramework.Users
-                .Where(u => u.UserId == id)
-                .FirstOrDefault<User>();
+            // * moved logic to user repository
+            // User? user = _entityFramework.Users
+            //     .Where(u => u.UserId == id)
+            //     .FirstOrDefault<User>();
 
-            if (user != null)
-            {
-                return user;
-            }
+            // if (user != null)
+            // {
+            //     return user;
+            // }
 
-            throw new Exception("Could not find user");
+            // throw new Exception("Could not find user");
+            return _userRepository.GetUser(id);
         }
 
         [HttpPost]
@@ -81,9 +84,10 @@ namespace DotnetAPI.Controllers
         // * when accepting a Model, a model is constructed based on provided body
         public IActionResult EditUser(UserDTO user, int id)
         {
-            User? userDB = _entityFramework.Users
-                             .Where(u => u.UserId == id)
-                             .FirstOrDefault<User>();
+            // User? userDB = _entityFramework.Users
+            //                  .Where(u => u.UserId == id)
+            //                  .FirstOrDefault<User>();
+            User userDB = _userRepository.GetUser(id);
 
             if (userDB != null)
             {
@@ -239,16 +243,18 @@ namespace DotnetAPI.Controllers
         [HttpGet("{id}/salary")]
         public ActionResult<UserSalary> GetUserSalary(int id)
         {
-            UserSalary? userSalary = _entityFramework.UserSalary
-                                        .Where(uji => uji.UserId == id)
-                                        .FirstOrDefault();
+            // * moved to user repository
+            // UserSalary? userSalary = _entityFramework.UserSalary
+            //                             .Where(usal => usal.UserId == id)
+            //                             .FirstOrDefault();
 
-            if (userSalary != null)
-            {
-                return userSalary;
-            }
+            // if (userSalary != null)
+            // {
+            //     return userSalary;
+            // }
 
-            throw new Exception("Unable to find user salary");
+            // throw new Exception("Unable to find user salary");
+            return _userRepository.GetUserSalary(id);
         }
 
         [HttpPost("{id}/salary")]
@@ -258,7 +264,7 @@ namespace DotnetAPI.Controllers
                             .Where(u => u.UserId == id)
                             .FirstOrDefault();
             UserSalary? userSalary = _entityFramework.UserSalary
-                            .Where(uji => uji.UserId == id)
+                            .Where(usal => usal.UserId == id)
                             .FirstOrDefault();
 
             // * user exists but does not have job info
@@ -287,7 +293,7 @@ namespace DotnetAPI.Controllers
                             .Where(u => u.UserId == id)
                             .FirstOrDefault();
             UserSalary? userSalary = _entityFramework.UserSalary
-                            .Where(uji => uji.UserId == id)
+                            .Where(usal => usal.UserId == id)
                             .FirstOrDefault();
 
             // * user exists and does have job info
@@ -309,7 +315,7 @@ namespace DotnetAPI.Controllers
         public IActionResult DeleteUserSalary(int id)
         {
             UserSalary? userSalary = _entityFramework.UserSalary
-                                .Where(uji => uji.UserId == id)
+                                .Where(usal => usal.UserId == id)
                                 .FirstOrDefault();
 
             if (userSalary != null)
