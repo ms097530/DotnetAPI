@@ -3139,11 +3139,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\mikew\\Documents\\Coding\\C# and .NET\\COURSE\\DotnetAPI\\DotnetAPI.csproj",
+      "projectUniqueName": "C:\\Users\\mikew\\Documents\\Coding\\CSharp_and_NET\\COURSE\\DotnetAPI\\DotnetAPI.csproj",
       "projectName": "DotnetAPI",
-      "projectPath": "C:\\Users\\mikew\\Documents\\Coding\\C# and .NET\\COURSE\\DotnetAPI\\DotnetAPI.csproj",
+      "projectPath": "C:\\Users\\mikew\\Documents\\Coding\\CSharp_and_NET\\COURSE\\DotnetAPI\\DotnetAPI.csproj",
       "packagesPath": "C:\\Users\\mikew\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\mikew\\Documents\\Coding\\C# and .NET\\COURSE\\DotnetAPI\\obj\\",
+      "outputPath": "C:\\Users\\mikew\\Documents\\Coding\\CSharp_and_NET\\COURSE\\DotnetAPI\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\mikew\\AppData\\Roaming\\NuGet\\NuGet.Config"

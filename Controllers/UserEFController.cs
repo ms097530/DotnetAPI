@@ -111,7 +111,8 @@ namespace DotnetAPI.Controllers
 
             if (userDB != null)
             {
-                _entityFramework.Remove(userDB);
+                // _entityFramework.Remove(userDB);
+                _userRepository.RemoveEntity(userDB);
 
                 if (_userRepository.SaveChanges())
                 {
@@ -210,7 +211,8 @@ namespace DotnetAPI.Controllers
 
             if (userJobInfo != null)
             {
-                _entityFramework.UserJobInfo.Remove(userJobInfo);
+                // _entityFramework.UserJobInfo.Remove(userJobInfo);
+                _userRepository.RemoveEntity(userJobInfo);
 
                 if (_userRepository.SaveChanges())
                 {
@@ -308,7 +310,8 @@ namespace DotnetAPI.Controllers
 
             if (userSalary != null)
             {
-                _entityFramework.UserSalary.Remove(userSalary);
+                // _entityFramework.UserSalary.Remove(userSalary);
+                _userRepository.RemoveEntity(userSalary);
 
                 if (_userRepository.SaveChanges())
                 {
