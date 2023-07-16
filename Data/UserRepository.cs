@@ -65,6 +65,31 @@ namespace DotnetAPI.Data
             throw new Exception("Could not find user");
         }
 
+        public IEnumerable<UserJobInfo> GetUserJobInfos()
+        {
+            return _entityFramework.UserJobInfo.ToList<UserJobInfo>();
+        }
+
+        public UserJobInfo GetUserJobInfo(int id)
+        {
+            // finds job info with UserId equal to passed id
+            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
+                                        .Where(uji => uji.UserId == id)
+                                        .FirstOrDefault();
+
+            if (userJobInfo != null)
+            {
+                return userJobInfo;
+            }
+
+            throw new Exception("Unable to find user job info");
+        }
+
+        public IEnumerable<UserSalary> GetUserSalaries()
+        {
+            return _entityFramework.UserSalary.ToList<UserSalary>();
+        }
+
         public UserSalary GetUserSalary(int id)
         {
             UserSalary? userSalary = _entityFramework.UserSalary
@@ -79,18 +104,6 @@ namespace DotnetAPI.Data
             throw new Exception("Unable to find user salary");
         }
 
-        public UserJobInfo GetUserJobInfo(int id)
-        {
-            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
-                                        .Where(uji => uji.UserId == id)
-                                        .FirstOrDefault();
 
-            if (userJobInfo != null)
-            {
-                return userJobInfo;
-            }
-
-            throw new Exception("Unable to find user job info");
-        }
     }
 }

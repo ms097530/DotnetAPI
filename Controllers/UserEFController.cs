@@ -16,15 +16,10 @@ namespace DotnetAPI.Controllers
     [ApiController]
     public class UserEFController : ControllerBase
     {
-        DataContextEF _entityFramework;
         IUserRepository _userRepository;
         IMapper _mapper;
         public UserEFController(IConfiguration config, IUserRepository userRepository)
         {
-            // * configuration object provides access to this from appsettings.json - unique to .NET 6+
-            _entityFramework = new DataContextEF(config);
-
-
             _userRepository = userRepository;
 
             _mapper = new Mapper(
@@ -34,10 +29,8 @@ namespace DotnetAPI.Controllers
 
 
         [HttpGet]
-        // public ActionResult<IEnumerable<User>> GetUsers()
         public IEnumerable<User> GetUsers()
         {
-            // IEnumerable<User> users = _entityFramework.Users.ToList<User>();
             IEnumerable<User> users = _userRepository.GetUsers();
             return users;
         }
@@ -45,17 +38,6 @@ namespace DotnetAPI.Controllers
         [HttpGet("{id}")]
         public ActionResult<User> GetUser(int id)
         {
-            // * moved logic to user repository
-            // User? user = _entityFramework.Users
-            //     .Where(u => u.UserId == id)
-            //     .FirstOrDefault<User>();
-
-            // if (user != null)
-            // {
-            //     return user;
-            // }
-
-            // throw new Exception("Could not find user");
             return _userRepository.GetUser(id);
         }
 
@@ -64,8 +46,6 @@ namespace DotnetAPI.Controllers
         public IActionResult AddUser(UserDTO user)
         {
             User userDB = _mapper.Map<User>(user);
-
-            // _entityFramework.Add(userDB);
 
             // * implicitly getting <User> for template
             _userRepository.AddEntity(userDB);
@@ -84,9 +64,6 @@ namespace DotnetAPI.Controllers
         // * when accepting a Model, a model is constructed based on provided body
         public IActionResult EditUser(UserDTO user, int id)
         {
-            // User? userDB = _entityFramework.Users
-            //                  .Where(u => u.UserId == id)
-            //                  .FirstOrDefault<User>();
             User userDB = _userRepository.GetUser(id);
 
             if (userDB != null)
@@ -111,13 +88,10 @@ namespace DotnetAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult DeleteUser(int id)
         {
-            User? userDB = _entityFramework.Users
-                            .Where(u => u.UserId == id)
-                            .FirstOrDefault();
+            User userDB = _userRepository.GetUser(id);
 
             if (userDB != null)
             {
-                // _entityFramework.Remove(userDB);
                 _userRepository.RemoveEntity(userDB);
 
                 if (_userRepository.SaveChanges())
@@ -134,100 +108,57 @@ namespace DotnetAPI.Controllers
         [HttpGet("jobinfo")]
         public IEnumerable<UserJobInfo> GetJobInfo()
         {
-            IEnumerable<UserJobInfo> jobInfo = _entityFramework.UserJobInfo.ToList();
-
-            return jobInfo;
+            return _userRepository.GetUserJobInfos();
         }
 
         [HttpGet("{id}/jobinfo")]
         public ActionResult<UserJobInfo> GetUserJobInfo(int id)
         {
-            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
-                                        .Where(uji => uji.UserId == id)
-                                        .FirstOrDefault();
-
-            if (userJobInfo != null)
-            {
-                return userJobInfo;
-            }
-
-            throw new Exception("Unable to find user job info");
+            return _userRepository.GetUserJobInfo(id);
         }
 
         [HttpPost("{id}/jobinfo")]
         public IActionResult AddUserJobInfo(int id, UserJobInfo jobInfo)
         {
-            User? user = _entityFramework.Users
-                            .Where(u => u.UserId == id)
-                            .FirstOrDefault();
-            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
-                            .Where(uji => uji.UserId == id)
-                            .FirstOrDefault();
+            jobInfo.UserId = id;
+            _userRepository.AddEntity(jobInfo);
 
-            // * user exists but does not have job info
-            if (userJobInfo == null && user != null)
+            if (_userRepository.SaveChanges())
             {
-                jobInfo.UserId = id;
-
-                // _entityFramework.UserJobInfo.Add(jobInfo);
-
-                // * explicitly making template UserJobInfo
-                _userRepository.AddEntity<UserJobInfo>(jobInfo);
-
-                if (_userRepository.SaveChanges())
-                {
-                    return Ok();
-                }
+                return Ok();
             }
 
-            string errMsg = user == null ? "User does not exist" : "This user already has job info";
-            throw new Exception(errMsg);
+            throw new Exception("Unable to add user job info");
         }
 
         [HttpPut("{id}/jobinfo")]
         public IActionResult EditUserJobInfo(int id, UserJobInfo jobInfo)
         {
-            User? user = _entityFramework.Users
-                            .Where(u => u.UserId == id)
-                            .FirstOrDefault();
-            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
-                            .Where(uji => uji.UserId == id)
-                            .FirstOrDefault();
+            UserJobInfo userJobInfo = _userRepository.GetUserJobInfo(id);
 
-            // * user exists and does have job info
-            if (userJobInfo != null && user != null)
+            userJobInfo.JobTitle = jobInfo.JobTitle;
+            userJobInfo.Department = jobInfo.Department;
+
+            if (_userRepository.SaveChanges())
             {
-                userJobInfo.JobTitle = jobInfo.JobTitle;
-                userJobInfo.Department = jobInfo.Department;
-
-                if (_userRepository.SaveChanges())
-                {
-                    return Ok();
-                }
-                return StatusCode(500);
+                return Ok();
             }
 
-            string errMsg = user == null ? "User does not exist" : "User does not have job info to edit";
-            throw new Exception(errMsg);
+            throw new Exception("Unable to edit user job info");
         }
         [HttpDelete("{id}/jobinfo")]
         public IActionResult DeleteUserJobInfo(int id)
         {
-            UserJobInfo? userJobInfo = _entityFramework.UserJobInfo
-                                .Where(uji => uji.UserId == id)
-                                .FirstOrDefault();
+            UserJobInfo userJobInfo = _userRepository.GetUserJobInfo(id);
 
-            if (userJobInfo != null)
+
+            _userRepository.RemoveEntity(userJobInfo);
+
+            if (_userRepository.SaveChanges())
             {
-                // _entityFramework.UserJobInfo.Remove(userJobInfo);
-                _userRepository.RemoveEntity(userJobInfo);
-
-                if (_userRepository.SaveChanges())
-                {
-                    return Ok();
-                }
-                return StatusCode(500);
+                return Ok();
             }
+
 
             throw new Exception("Unable to find matching job info");
         }
@@ -235,7 +166,7 @@ namespace DotnetAPI.Controllers
         [HttpGet("salary")]
         public IEnumerable<UserSalary> GetSalary()
         {
-            IEnumerable<UserSalary> salary = _entityFramework.UserSalary.ToList();
+            IEnumerable<UserSalary> salary = _userRepository.GetUserSalaries();
 
             return salary;
         }
@@ -243,92 +174,49 @@ namespace DotnetAPI.Controllers
         [HttpGet("{id}/salary")]
         public ActionResult<UserSalary> GetUserSalary(int id)
         {
-            // * moved to user repository
-            // UserSalary? userSalary = _entityFramework.UserSalary
-            //                             .Where(usal => usal.UserId == id)
-            //                             .FirstOrDefault();
-
-            // if (userSalary != null)
-            // {
-            //     return userSalary;
-            // }
-
-            // throw new Exception("Unable to find user salary");
             return _userRepository.GetUserSalary(id);
         }
 
         [HttpPost("{id}/salary")]
         public IActionResult AddUserSalary(int id, UserSalary salary)
         {
-            User? user = _entityFramework.Users
-                            .Where(u => u.UserId == id)
-                            .FirstOrDefault();
-            UserSalary? userSalary = _entityFramework.UserSalary
-                            .Where(usal => usal.UserId == id)
-                            .FirstOrDefault();
+            salary.UserId = id;
+            _userRepository.AddEntity(salary);
 
-            // * user exists but does not have job info
-            if (userSalary == null && user != null)
+            if (_userRepository.SaveChanges())
             {
-                salary.UserId = id;
-
-                // _entityFramework.UserSalary.Add(salary);
-                _userRepository.AddEntity(salary);
-
-                if (_userRepository.SaveChanges())
-                {
-                    return Ok();
-                }
-                return StatusCode(500);
+                return Ok();
             }
+            return StatusCode(500);
 
-            string errMsg = user == null ? "User does not exist" : "This user already has salary";
-            throw new Exception(errMsg);
+            throw new Exception("Unable to add user salary");
         }
 
         [HttpPut("{id}/salary")]
         public IActionResult EditUserSalary(int id, UserSalary salary)
         {
-            User? user = _entityFramework.Users
-                            .Where(u => u.UserId == id)
-                            .FirstOrDefault();
-            UserSalary? userSalary = _entityFramework.UserSalary
-                            .Where(usal => usal.UserId == id)
-                            .FirstOrDefault();
+            UserSalary userSalary = _userRepository.GetUserSalary(id);
 
-            // * user exists and does have job info
-            if (userSalary != null && user != null)
+            userSalary.Salary = salary.Salary;
+
+            if (_userRepository.SaveChanges())
             {
-                userSalary.Salary = salary.Salary;
-
-                if (_userRepository.SaveChanges())
-                {
-                    return Ok();
-                }
-                return StatusCode(500);
+                return Ok();
             }
 
-            string errMsg = user == null ? "User does not exist" : "User does not have salary to edit";
-            throw new Exception(errMsg);
+            throw new Exception("Unable to update user salary");
         }
         [HttpDelete("{id}/salary")]
         public IActionResult DeleteUserSalary(int id)
         {
-            UserSalary? userSalary = _entityFramework.UserSalary
-                                .Where(usal => usal.UserId == id)
-                                .FirstOrDefault();
+            UserSalary userSalary = _userRepository.GetUserSalary(id);
+            _userRepository.RemoveEntity(userSalary);
 
-            if (userSalary != null)
+            if (_userRepository.SaveChanges())
             {
-                // _entityFramework.UserSalary.Remove(userSalary);
-                _userRepository.RemoveEntity(userSalary);
-
-                if (_userRepository.SaveChanges())
-                {
-                    return Ok();
-                }
-                return StatusCode(500);
+                return Ok();
             }
+
 
             throw new Exception("Unable to find matching salary");
         }

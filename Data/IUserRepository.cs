@@ -10,7 +10,9 @@ namespace DotnetAPI.Data
         public void RemoveEntity<T>(T entityToRemove);
         public IEnumerable<User> GetUsers();
         public User GetUser(int id);
-        public UserSalary GetUserSalary(int id);
+        public IEnumerable<UserJobInfo> GetUserJobInfos();
         public UserJobInfo GetUserJobInfo(int id);
+        public IEnumerable<UserSalary> GetUserSalaries();
+        public UserSalary GetUserSalary(int id);
     }
 }
