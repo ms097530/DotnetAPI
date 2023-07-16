@@ -37,8 +37,8 @@ builder.Services.AddCors((options) =>
     });
 });
 
-// <Interface, Class>
-// makes so we can access IUserRepository inside controller
+// * <Interface, Class>
+// * makes so we can access IUserRepository inside controller
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 var app = builder.Build();

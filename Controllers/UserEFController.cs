@@ -16,6 +16,7 @@ namespace DotnetAPI.Controllers
     [ApiController]
     public class UserEFController : ControllerBase
     {
+        // * access setup in Program as a scoped service
         IUserRepository _userRepository;
         IMapper _mapper;
         public UserEFController(IConfiguration config, IUserRepository userRepository)
