@@ -17,11 +17,16 @@ namespace DotnetAPI.Controllers
     public class UserEFController : ControllerBase
     {
         DataContextEF _entityFramework;
+        IUserRepository _userRepository;
         IMapper _mapper;
-        public UserEFController(IConfiguration config)
+        public UserEFController(IConfiguration config, IUserRepository userRepository)
         {
             // * configuration object provides access to this from appsettings.json - unique to .NET 6+
             _entityFramework = new DataContextEF(config);
+
+
+            _userRepository = userRepository;
+
             _mapper = new Mapper(
                 new MapperConfiguration(cfg => cfg.CreateMap<UserDTO, User>())
             );
@@ -57,9 +62,10 @@ namespace DotnetAPI.Controllers
         {
             User userDB = _mapper.Map<User>(user);
 
-            _entityFramework.Add(userDB);
+            // _entityFramework.Add(userDB);
+            _userRepository.AddEntity(userDB);
 
-            if (_entityFramework.SaveChanges() > 0)
+            if (_userRepository.SaveChanges())
             {
                 return Ok();
             }
@@ -85,7 +91,7 @@ namespace DotnetAPI.Controllers
                 userDB.Email = user.Email;
                 userDB.Gender = user.Gender;
 
-                if (_entityFramework.SaveChanges() > 0)
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
@@ -107,7 +113,7 @@ namespace DotnetAPI.Controllers
             {
                 _entityFramework.Remove(userDB);
 
-                if (_entityFramework.SaveChanges() > 0)
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
@@ -156,8 +162,10 @@ namespace DotnetAPI.Controllers
             {
                 jobInfo.UserId = id;
 
-                _entityFramework.UserJobInfo.Add(jobInfo);
-                if (_entityFramework.SaveChanges() > 0)
+                // _entityFramework.UserJobInfo.Add(jobInfo);
+                _userRepository.AddEntity(jobInfo);
+
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
@@ -183,7 +191,7 @@ namespace DotnetAPI.Controllers
                 userJobInfo.JobTitle = jobInfo.JobTitle;
                 userJobInfo.Department = jobInfo.Department;
 
-                if (_entityFramework.SaveChanges() > 0)
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
@@ -204,7 +212,7 @@ namespace DotnetAPI.Controllers
             {
                 _entityFramework.UserJobInfo.Remove(userJobInfo);
 
-                if (_entityFramework.SaveChanges() > 0)
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
@@ -252,8 +260,10 @@ namespace DotnetAPI.Controllers
             {
                 salary.UserId = id;
 
-                _entityFramework.UserSalary.Add(salary);
-                if (_entityFramework.SaveChanges() > 0)
+                // _entityFramework.UserSalary.Add(salary);
+                _userRepository.AddEntity(salary);
+
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
@@ -279,7 +289,7 @@ namespace DotnetAPI.Controllers
             {
                 userSalary.Salary = salary.Salary;
 
-                if (_entityFramework.SaveChanges() > 0)
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
@@ -300,7 +310,7 @@ namespace DotnetAPI.Controllers
             {
                 _entityFramework.UserSalary.Remove(userSalary);
 
-                if (_entityFramework.SaveChanges() > 0)
+                if (_userRepository.SaveChanges())
                 {
                     return Ok();
                 }
