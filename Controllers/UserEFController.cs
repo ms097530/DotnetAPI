@@ -63,6 +63,8 @@ namespace DotnetAPI.Controllers
             User userDB = _mapper.Map<User>(user);
 
             // _entityFramework.Add(userDB);
+
+            // * implicitly getting <User> for template
             _userRepository.AddEntity(userDB);
 
             if (_userRepository.SaveChanges())
@@ -164,7 +166,9 @@ namespace DotnetAPI.Controllers
                 jobInfo.UserId = id;
 
                 // _entityFramework.UserJobInfo.Add(jobInfo);
-                _userRepository.AddEntity(jobInfo);
+
+                // * explicitly making template UserJobInfo
+                _userRepository.AddEntity<UserJobInfo>(jobInfo);
 
                 if (_userRepository.SaveChanges())
                 {
