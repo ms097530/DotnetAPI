@@ -11,6 +11,7 @@ using System.Data;
 using System.Security.Claims;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using DotnetAPI.Helpers;
 
 namespace DotnetAPI.Controllers
 {
@@ -20,11 +21,11 @@ namespace DotnetAPI.Controllers
     public class AuthController : ControllerBase
     {
         private readonly DataContextDapper _dapper;
-        private readonly IConfiguration _config;
+        private readonly AuthHelper _authHelper;
         public AuthController(IConfiguration config)
         {
             _dapper = new DataContextDapper(config);
-            _config = config;
+            _authHelper = new AuthHelper(config);
         }
 
         [AllowAnonymous]
@@ -58,7 +59,7 @@ namespace DotnetAPI.Controllers
                         rng.GetNonZeroBytes(passwordSalt);
                     }
 
-                    byte[] passwordHash = GetPasswordHash(userForRegistration.Password, passwordSalt);
+                    byte[] passwordHash = _authHelper.GetPasswordHash(userForRegistration.Password, passwordSalt);
 
                     // ? using SQL variables (i.e. @PasswordHash)
                     // * NOTE: using ""{...}"" where double quotes are doubled to escape in string
@@ -130,7 +131,7 @@ namespace DotnetAPI.Controllers
             UserForLoginConfirmationDTO userForConfirmation = _dapper.LoadDataSingle<UserForLoginConfirmationDTO>(sqlForHashAndSalt);
 
             // * userForLogin provides password -> get hash using provided password and stored salt for user (userForConfirmation) -> compare hashes
-            byte[] passwordHash = GetPasswordHash(userForLogin.Password, userForConfirmation.PasswordSalt);
+            byte[] passwordHash = _authHelper.GetPasswordHash(userForLogin.Password, userForConfirmation.PasswordSalt);
 
             // * providing same password and salt to hashing algorithm should provide matching results -> if they match, login user
             // ? can't directly compare results because they are arrays of bytes (pointer)
@@ -149,7 +150,7 @@ namespace DotnetAPI.Controllers
             int userId = _dapper.LoadDataSingle<int>(userIdSql);
 
             return Ok(new Dictionary<string, string> {
-                {"token", CreateToken(userId)}
+                {"token", _authHelper.CreateToken(userId)}
             });
         }
 
@@ -162,61 +163,8 @@ namespace DotnetAPI.Controllers
 
             int userId = _dapper.LoadDataSingle<int>(userIdSql);
 
-            return CreateToken(userId);
+            return _authHelper.CreateToken(userId);
         }
 
-        private byte[] GetPasswordHash(string password, byte[] passwordSalt)
-        {
-            // * retrieve value for PasswordKey from app settings and combine with salt
-            // ? using this scheme, password only lives in application... what is stored in DB will be password + key + salt that gets hashed
-            string passwordSaltPlusString = _config.GetSection("AppSettings:PasswordKey").Value + Convert.ToBase64String(passwordSalt);
-
-            byte[] passwordHash = KeyDerivation.Pbkdf2(
-                password: password,
-                // * convert back to byte array
-                salt: Encoding.ASCII.GetBytes(passwordSaltPlusString),
-                prf: KeyDerivationPrf.HMACSHA256,
-                iterationCount: 100000,
-                numBytesRequested: 256 / 8
-            );
-
-            return passwordHash;
-        }
-
-        private string CreateToken(int userId)
-        {
-            // * Claim is stored in token so that it can be accessed in frontend and backend
-            Claim[] claims = new Claim[] {
-                new Claim("userId", userId.ToString())
-            };
-
-            // * create key -> create signer -> create token builder -> pass all to token builder
-            // ? SymmetricSecurityKey ctor requires byte array -> get key from appsettings and convert to byte array
-            string? tokenKeyString = _config.GetSection("Appsettings:TokenKey").Value;
-            SymmetricSecurityKey tokenKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    tokenKeyString != null ? tokenKeyString : ""
-                ));
-
-            // * signs token
-            SigningCredentials credentials = new SigningCredentials(tokenKey, SecurityAlgorithms.HmacSha512Signature);
-
-            // * setup descriptor for token
-            SecurityTokenDescriptor descriptor = new SecurityTokenDescriptor()
-            {
-                Subject = new ClaimsIdentity(claims),
-                SigningCredentials = credentials,
-                Expires = DateTime.Now.AddDays(1)
-            };
-
-            // * has methods to turn descriptor into actual token we can pass to user
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-
-            // * token will come back in form of SecurityToken
-            SecurityToken token = tokenHandler.CreateToken(descriptor);
-
-            // * convert token into string (so it can be a universal format) and return it
-            return tokenHandler.WriteToken(token);
-        }
     }
 }
