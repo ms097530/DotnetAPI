@@ -77,8 +77,29 @@ namespace DotnetAPI.Controllers
 
                     if (_dapper.ExecuteSqlWithParameters(sqlAddAuth, sqlParameters))
                     {
+                        // * using 1 in place of provided value for Active since we don't want to create users that start as inactive
+                        string sqlAddUser = @$"
+                            INSERT INTO TutorialAppSchema.Users(
+                                [FirstName],
+                                [LastName],
+                                [Email],
+                                [Gender],
+                                [Active]
+                            ) VALUES (
+                                '{userForRegistration.FirstName}',
+                                '{userForRegistration.LastName}',
+                                '{userForRegistration.Email}',
+                                '{userForRegistration.Gender}',
+                                '1'
+                            )
+                        ";
 
-                        return Ok();
+                        if (_dapper.ExecuteSql(sqlAddUser))
+                        {
+
+                            return Ok();
+                        }
+                        throw new Exception("Unable to add user");
                     }
 
                     throw new Exception("Failed to register user");
