@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.Data.SqlClient;
 using System.Data;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace DotnetAPI.Controllers
 {
@@ -135,8 +138,14 @@ namespace DotnetAPI.Controllers
             }
 
             // * made it through loop - credentials matched!
+            // * get userId of user attempting to login using provided email
+            string userIdSql = $"SELECT UserId FROM TutorialAppSchema.Users WHERE Email = '{userForLogin.Email}'";
 
-            return Ok();
+            int userId = _dapper.LoadDataSingle<int>(userIdSql);
+
+            return Ok(new Dictionary<string, string> {
+                {"token", CreateToken(userId)}
+            });
         }
 
         private byte[] GetPasswordHash(string password, byte[] passwordSalt)
@@ -155,6 +164,42 @@ namespace DotnetAPI.Controllers
             );
 
             return passwordHash;
+        }
+
+        private string CreateToken(int userId)
+        {
+            // * Claim is stored in token so that it can be accessed in frontend and backend
+            Claim[] claims = new Claim[] {
+                new Claim("userId", userId.ToString())
+            };
+
+            // * create key -> create signer -> create token builder -> pass all to token builder
+            // ? SymmetricSecurityKey ctor requires byte array -> get key from appsettings and convert to byte array
+            string? tokenKeyString = _config.GetSection("Appsettings:TokenKey").Value;
+            SymmetricSecurityKey tokenKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    tokenKeyString != null ? tokenKeyString : ""
+                ));
+
+            // * signs token
+            SigningCredentials credentials = new SigningCredentials(tokenKey, SecurityAlgorithms.HmacSha512Signature);
+
+            // * setup descriptor for token
+            SecurityTokenDescriptor descriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(claims),
+                SigningCredentials = credentials,
+                Expires = DateTime.Now.AddDays(1)
+            };
+
+            // * has methods to turn descriptor into actual token we can pass to user
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+
+            // * token will come back in form of SecurityToken
+            SecurityToken token = tokenHandler.CreateToken(descriptor);
+
+            // * convert token into string (so it can be a universal format) and return it
+            return tokenHandler.WriteToken(token);
         }
     }
 }
