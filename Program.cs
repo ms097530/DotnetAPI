@@ -1,4 +1,7 @@
+using System.Text;
 using DotnetAPI.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +43,22 @@ builder.Services.AddCors((options) =>
 // * <Interface, Class>
 // * makes so we can access IUserRepository inside controller
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+// * need Microsoft.AspNetCore.Authentication.JwtBearer package
+// * sets up application to receive JWT back from user to validate
+string? tokenKeyString = builder.Configuration.GetSection("AppSettings:TokenKey").Value;
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                tokenKeyString != null ? tokenKeyString : ""
+            )),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 
 var app = builder.Build();
 
@@ -59,7 +78,9 @@ else
     app.UseHttpsRedirection();
 }
 
-
+// * authentication and authorization
+// ! AUTHENTICATION NEEDS TO COME BEFORE AUTHORIZATION
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

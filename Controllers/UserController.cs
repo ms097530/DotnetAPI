@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 // ? good practice to use sub-namespaces so things can be loaded separately/modularly
 namespace DotnetAPI.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
         DataContextDapper _dapper;

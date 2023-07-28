@@ -14,6 +14,9 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace DotnetAPI.Controllers
 {
+    [Authorize]
+    [ApiController]
+    [Route("[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly DataContextDapper _dapper;
@@ -24,6 +27,7 @@ namespace DotnetAPI.Controllers
             _config = config;
         }
 
+        [AllowAnonymous]
         [HttpPost("Register")]
         /* 
             request will expect object with form of
@@ -114,6 +118,7 @@ namespace DotnetAPI.Controllers
             throw new Exception("Passwords do not match");
         }
 
+        [AllowAnonymous]
         [HttpPost("Login")]
         public IActionResult Login(UserForLoginDTO userForLogin)
         {
@@ -146,6 +151,18 @@ namespace DotnetAPI.Controllers
             return Ok(new Dictionary<string, string> {
                 {"token", CreateToken(userId)}
             });
+        }
+
+        [HttpGet("RefreshToken")]
+        public string RefreshToken()
+        {
+            // * token will be accessible via [Authorize] attribute on controller
+            // * see if user id is valid on token -> if valid, send new token back to user
+            string userIdSql = $"SELECT UserId FROM TutorialAppSchema.Users WHERE UserId = {User.FindFirst("userId")?.Value}";
+
+            int userId = _dapper.LoadDataSingle<int>(userIdSql);
+
+            return CreateToken(userId);
         }
 
         private byte[] GetPasswordHash(string password, byte[] passwordSalt)

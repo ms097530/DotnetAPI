@@ -144,3 +144,4 @@ C:\Users\mikew\Documents\Coding\CSharp_and_NET\COURSE\DotnetAPI\obj\Debug\net7.0
 C:\Users\mikew\Documents\Coding\CSharp_and_NET\COURSE\DotnetAPI\obj\Debug\net7.0\DotnetAPI.pdb
 C:\Users\mikew\Documents\Coding\CSharp_and_NET\COURSE\DotnetAPI\obj\Debug\net7.0\DotnetAPI.genruntimeconfig.cache
 C:\Users\mikew\Documents\Coding\CSharp_and_NET\COURSE\DotnetAPI\obj\Debug\net7.0\ref\DotnetAPI.dll
+C:\Users\mikew\Documents\Coding\CSharp_and_NET\COURSE\DotnetAPI\bin\Debug\net7.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
