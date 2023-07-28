@@ -99,6 +99,22 @@ namespace DotnetAPI.Controllers
                 WHERE Email = '{userForLogin.Email}'";
 
             UserForLoginConfirmationDTO userForConfirmation = _dapper.LoadDataSingle<UserForLoginConfirmationDTO>(sqlForHashAndSalt);
+
+            // * userForLogin provides password -> get hash using provided password and stored salt for user (userForConfirmation) -> compare hashes
+            byte[] passwordHash = GetPasswordHash(userForLogin.Password, userForConfirmation.PasswordSalt);
+
+            // * providing same password and salt to hashing algorithm should provide matching results -> if they match, login user
+            // ? can't directly compare results because they are arrays of bytes (pointer)
+            for (int i = 0; i < passwordHash.Length; i++)
+            {
+                if (passwordHash[i] != userForConfirmation.PasswordHash[i])
+                {
+                    return StatusCode(401, "Credentials incorrect");
+                }
+            }
+
+            // * made it through loop - credentials matched!
+
             return Ok();
         }
 
