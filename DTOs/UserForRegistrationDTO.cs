@@ -1,10 +1,10 @@
 namespace DotnetAPI.DTOs
 {
     // when registering, user will need to provide email, PW, and confirm that PW
-    partial class UserForRegistrationDTO
+    public partial class UserForRegistrationDTO
     {
-        string Email { get; set; } = "";
-        string Password { get; set; } = "";
-        string PasswordConfirm { get; set; } = "";
+        public string Email { get; set; } = "";
+        public string Password { get; set; } = "";
+        public string PasswordConfirm { get; set; } = "";
     }
 }
