@@ -51,26 +51,16 @@ namespace DotnetAPI.Controllers
                         rng.GetNonZeroBytes(passwordSalt);
                     }
 
-                    // * retrieve value for PasswordKey from app settings and combine with salt
-                    // ? using this scheme, password only lives in application... what is stored in DB will be password + key + salt that gets hashed
-                    string passwordSaltPlusString = _config.GetSection("AppSettings:PasswordKey").Value + Convert.ToBase64String(passwordSalt);
-
-                    byte[] passwordHash = KeyDerivation.Pbkdf2(
-                        password: userForRegistration.Password,
-                        // * convert back to byte array
-                        salt: Encoding.ASCII.GetBytes(passwordSaltPlusString),
-                        prf: KeyDerivationPrf.HMACSHA256,
-                        iterationCount: 100000,
-                        numBytesRequested: 256 / 8
-                    );
+                    byte[] passwordHash = GetPasswordHash(userForRegistration.Password, passwordSalt);
 
                     // ? using SQL variables (i.e. @PasswordHash)
+                    // * NOTE: using ""{...}"" where double quotes are doubled to escape in string
                     string sqlAddAuth = @$"INSERT INTO TutorialAppSchema.Auth (
                             [Email],
                             [PasswordHash],
                             [PasswordSalt]
-                        ) VALUES(
-                            {userForRegistration.Email},
+                        ) VALUES (
+                            '{userForRegistration.Email}',
                             @PasswordHash,
                             @PasswordSalt
                         )";
@@ -103,7 +93,31 @@ namespace DotnetAPI.Controllers
         [HttpPost("Login")]
         public IActionResult Login(UserForLoginDTO userForLogin)
         {
+            string sqlForHashAndSalt = @$"SELECT [PasswordHash],
+                [PasswordSalt] 
+                FROM TutorialAppSchema.Auth 
+                WHERE Email = '{userForLogin.Email}'";
+
+            UserForLoginConfirmationDTO userForConfirmation = _dapper.LoadDataSingle<UserForLoginConfirmationDTO>(sqlForHashAndSalt);
             return Ok();
+        }
+
+        private byte[] GetPasswordHash(string password, byte[] passwordSalt)
+        {
+            // * retrieve value for PasswordKey from app settings and combine with salt
+            // ? using this scheme, password only lives in application... what is stored in DB will be password + key + salt that gets hashed
+            string passwordSaltPlusString = _config.GetSection("AppSettings:PasswordKey").Value + Convert.ToBase64String(passwordSalt);
+
+            byte[] passwordHash = KeyDerivation.Pbkdf2(
+                password: password,
+                // * convert back to byte array
+                salt: Encoding.ASCII.GetBytes(passwordSaltPlusString),
+                prf: KeyDerivationPrf.HMACSHA256,
+                iterationCount: 100000,
+                numBytesRequested: 256 / 8
+            );
+
+            return passwordHash;
         }
     }
 }
