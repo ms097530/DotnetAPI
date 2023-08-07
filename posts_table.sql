@@ -23,6 +23,17 @@ SELECT [PostId],
 [PostCreated],
 [PostUpdated] FROM TutorialAppSchema.Posts
 
+SELECT * FROM TutorialAppSchema.Users WHERE UserId = 1010
+
+SELECT * FROM TutorialAppSchema.Posts
+
+UPDATE TutorialAppSchema.Posts SET 
+    PostTitle = 'ahh',
+    PostContent = 'boo'
+ WHERE PostId = 1
+
+SELECT * FROM TutorialAppSchema.Auth
+
 -- INSERT INTO TutorialAppSchema.Posts([PostId],
 -- [UserId],
 -- [PostTitle],
