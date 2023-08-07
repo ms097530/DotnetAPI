@@ -19,6 +19,7 @@ public class TestController : ControllerBase
     public IEnumerable<Test> Get()
     {
         Console.WriteLine("TESTING API");
+        _logger.Log(new LogLevel(), "Hello Test");
         return new Test[] { new Test(), new Test("DUMMY") };
     }
 

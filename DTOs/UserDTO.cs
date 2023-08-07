@@ -1,4 +1,4 @@
-namespace DotnetAPI.DTO;
+namespace DotnetAPI.DTOs;
 
 public partial class UserDTO
 {

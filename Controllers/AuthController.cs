@@ -50,7 +50,7 @@ namespace DotnetAPI.Controllers
 
                 // * for successful registration, want no users to be returned
                 // * now we know email is available, AND that passwords match
-                if (existingUsers.Count() == 0)
+                if (existingUsers.Any())
                 {
                     byte[] passwordSalt = new byte[128 / 8];
                     using (RandomNumberGenerator rng = RandomNumberGenerator.Create())

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using DotnetAPI;
 using DotnetAPI.Data;
-using DotnetAPI.DTO;
+using DotnetAPI.DTOs;
 using DotnetAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
