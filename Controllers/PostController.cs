@@ -87,6 +87,20 @@ namespace DotnetAPI.Controllers
             return posts;
         }
 
+        [HttpGet("search")]
+        // * ASP.NET Core will automatically bind form values, route values and query strings by name, so below works for pulling from query string
+        public IEnumerable<Post> SearchPosts([FromQuery] string title = "", [FromQuery] string content = "")
+        {
+            Console.WriteLine($"Title: {title} Content: {content}");
+
+            string sql = $@"SELECT * FROM TutorialAppSchema.Posts
+                WHERE PostTitle LIKE '%{title}%'
+                    OR PostContent LIKE '%{content}%'";
+
+
+            return _dapper.LoadData<Post>(sql);
+        }
+
         [HttpPost]
         public IActionResult AddPost(PostToAddDTO postToAdd)
         {
